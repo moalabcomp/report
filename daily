@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    :root { --am-bg: #ff8c00; --pm-bg: #1e3a8a; --bg-gray: #f2f4f7; }
+    body { font-family: -apple-system, sans-serif; background-color: var(--bg-gray); padding: 15px; margin: 0; }
+    .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    .time-selector { display: flex; gap: 10px; margin-bottom: 25px; }
+    .time-btn { flex: 1; padding: 18px; border: 2px solid #ddd; border-radius: 12px; background: #fff; cursor: pointer; font-weight: 900; font-size: 16px; color: #777; transition: all 0.2s; }
+    .time-btn.am.active { background: var(--am-bg); color: white; border-color: var(--am-bg); }
+    .time-btn.pm.active { background: var(--pm-bg); color: white; border-color: var(--pm-bg); }
+    label { display: block; margin: 12px 0 5px; font-weight: bold; font-size: 14px; color: #444; }
+    input, select, textarea { width: 100%; padding: 13px; border: 1px solid #ced4da; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    button#submit { width: 100%; background: #222; color: white; border: none; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: 800; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="time-selector">
+      <button class="time-btn am" id="amBtn" onclick="setTime('오전')">☀️ 오전</button>
+      <button class="time-btn pm" id="pmBtn" onclick="setTime('오후')">🌙 오후</button>
+    </div>
+    <input type="hidden" id="type" value="오전">
+
+    <label>👤 담당자 선택</label>
+    <select id="name">
+      <option value="" disabled selected>이름 선택</option>
+      <option value="최보람">최보람</option><option value="김재홍">김재홍</option><option value="박영광">박영광</option>
+      <option value="김상현">김상현</option><option value="이지수">이지수</option>
+      <option value="홍은준">홍은준</option><option value="박준수">박준수</option><option value="박정훈">박정훈</option>
+      <option value="이대환">이대환</option><option value="오승영">오승영</option><option value="강희원">강희원</option>
+      <option value="박성부">박성부</option><option value="장민기">장민기</option><option value="송민우">송민우</option>
+      <option value="이재현">이재현</option><option value="송종협">송종협</option><option value="허지웅">허지웅</option>
+      <option value="백형진">백형진</option><option value="안익현">안익현</option><option value="도민수">도민수</option>
+      <option value="장주광">장주광</option><option value="전성재">전성재</option><option value="김낙연">김낙연</option>
+    </select>
+
+    <div class="grid">
+      <div><label>입장</label><input type="number" id="entry" value="0" onclick="this.select()"></div>
+      <div><label>멤버십</label><input type="number" id="membership" value="0" onclick="this.select()"></div>
+    </div>
+    <div class="grid">
+      <div><label>코인</label><input type="number" id="coin" value="0" onclick="this.select()"></div>
+      <div><label>입금</label><input type="number" id="deposit" value="0" onclick="this.select()"></div>
+    </div>
+    <label>📈 업셀링</label><input type="number" id="upselling" value="0" onclick="this.select()">
+
+    <label>📞 콜 업무 (일반/자사/관리)</label>
+    <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <input type="number" id="call1" value="0" onclick="this.select()">
+      <input type="number" id="call2" value="0" onclick="this.select()">
+      <input type="number" id="call3" value="0" onclick="this.select()">
+    </div>
+
+    <label>📝 메모</label>
+    <textarea id="memo" rows="2" placeholder="메모 입력"></textarea>
+
+    <button id="submit" onclick="submitData()">데이터 제출</button>
+  </div>
+
+  <script>
+    function setTime(type) {
+      document.getElementById('type').value = type;
+      document.getElementById('amBtn').className = (type === '오전') ? 'time-btn am active' : 'time-btn am';
+      document.getElementById('pmBtn').className = (type === '오후') ? 'time-btn pm active' : 'time-btn pm';
+    }
+
+    const now = new Date();
+    const t = now.getHours() * 100 + now.getMinutes();
+    if (t >= 900 && t <= 1230) setTime('오전'); else setTime('오후');
+
+    // ★ 여기에 1단계에서 발급받은 새 배포 웹 앱 URL(/exec)을 붙여넣으세요!
+    const GAS_URL = "여기에_새_배포_URL_입력"; 
+
+    function submitData() {
+      const btn = document.getElementById('submit');
+      const name = document.getElementById('name').value;
+      if (!name) { alert("이름을 선택해주세요!"); return; }
+      btn.disabled = true; btn.innerText = "전송 중...";
+      
+      const data = {
+        type: document.getElementById('type').value,
+        name: name,
+        entry: document.getElementById('entry').value || 0,
+        membership: document.getElementById('membership').value || 0,
+        coin: document.getElementById('coin').value || 0,
+        deposit: document.getElementById('deposit').value || 0,
+        upselling: document.getElementById('upselling').value || 0,
+        call1: document.getElementById('call1').value || 0,
+        call2: document.getElementById('call2').value || 0,
+        call3: document.getElementById('call3').value || 0,
+        memo: document.getElementById('memo').value
+      };
+
+      fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(res => {
+        alert(res.message);
+        btn.innerText = "데이터 제출";
+        btn.disabled = false;
+        // 깃허브 모바일 브라우저에서는 window.close()가 막혀있어 페이지 새로고침으로 대체합니다.
+        window.location.reload(); 
+      })
+      .catch(err => {
+        alert("전송 중 오류가 발생했습니다.");
+        btn.innerText = "데이터 제출";
+        btn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
